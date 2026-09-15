@@ -27,7 +27,7 @@ services:
       - "5000:5000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgrespassword@db:5432/autonomous_ops
-      - AI_ENGINE_URL=http://ai-engine:8000
+      - AI_ENGINE_URL=${AI_ENGINE_URL:-http://host.docker.internal:8000}
       - AI_ENGINE_TIMEOUT_SECONDS=15.0
       - AVERAGE_SPEED_KMH=30.0
       - HOST=0.0.0.0
@@ -42,43 +42,6 @@ services:
       timeout: 5s
       retries: 3
 
-  ai-engine:
-    image: python:3.11-slim
-    container_name: autonomous_ops_ai_engine
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
-    command: >
-      sh -c "pip install fastapi uvicorn && python -c \"
-      import uvicorn
-      from fastapi import FastAPI
-      app = FastAPI()
-      @app.get('/health')
-      def h(): return {'status': 'healthy'}
-      @app.post('/autonomous-operation')
-      def op(req: dict):
-          return {
-              'failure_probability': 0.88,
-              'asset_risk': 'HIGH',
-              'RUL': 42.5,
-              'recommended_action': 'REPLACE_BEARING',
-              'stock_status': 'CRITICAL_LOW',
-              'reorder_quantity': 5,
-              'preventive_cost': 750.0,
-              'failure_cost': 8500.0,
-              'estimated_savings': 7750.0,
-              'required_skills': ['HVAC_CERTIFIED', 'BEARING_OVERHAUL'],
-              'required_parts': ['PART-BRG-7701'],
-              'priority': 'HIGH',
-              'autonomous_decision': 'SCHEDULE_IMMEDIATE_DISPATCH'
-          }
-      uvicorn.run(app, host='0.0.0.0', port=8000)
-      \""
-    healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
 volumes:
   postgres_data:
+
