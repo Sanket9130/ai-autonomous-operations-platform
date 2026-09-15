@@ -1,1 +1,1 @@
-"""Services package."""
+"""Backend service layer."""
