@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous Operations Intelligence Platform | Dubai FM Core</title>
+  <meta name="description" content="Dubai Facility & Property Management AI Decision Intelligence Dashboard for Autonomous Operations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="top-header">
+      <div class="brand-section">
+        <div class="logo-orb">⚡</div>
+        <div class="brand-text">
+          <h1>AUTONOMOUS FM</h1>
+          <span class="brand-sub">Decision Intelligence Platform • Dubai Operational Hub</span>
+        </div>
+      </div>
+      <div class="system-status-pills">
+        <div class="status-pill backend-pill" id="backend-status-pill">
+          <span class="status-dot"></span>
+          <span class="status-label">Backend: <strong id="backend-status-text">Connecting...</strong></span>
+        </div>
+        <div class="status-pill ai-pill" id="ai-status-pill">
+          <span class="status-dot"></span>
+          <span class="status-label">AI Engine: <strong id="ai-status-text">Online</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- KPI Summary Ribbon -->
+    <section class="kpi-ribbon">
+      <div class="kpi-card" id="kpi-assets">
+        <div class="kpi-icon">🏢</div>
+        <div class="kpi-content">
+          <span class="kpi-label">Monitored Assets</span>
+          <h2 class="kpi-val" id="val-total-assets">-</h2>
+          <span class="kpi-caption">Commercial & Residential</span>
+        </div>
+      </div>
+      <div class="kpi-card highlight-danger" id="kpi-critical">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-content">
+          <span class="kpi-label">High Risk Assets</span>
+          <h2 class="kpi-val text-critical" id="val-critical-assets">-</h2>
+          <span class="kpi-caption">Imminent failure vulnerability</span>
+        </div>
+      </div>
+      <div class="kpi-card" id="kpi-inventory">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-content">
+          <span class="kpi-label">Tracked Spare Parts</span>
+          <h2 class="kpi-val" id="val-total-inventory">-</h2>
+          <span class="kpi-caption">Warehouse buffer status</span>
+        </div>
+      </div>
+      <div class="kpi-card" id="kpi-technicians">
+        <div class="kpi-icon">👨‍🔧</div>
+        <div class="kpi-content">
+          <span class="kpi-label">Active Technicians</span>
+          <h2 class="kpi-val" id="val-active-techs">-</h2>
+          <span class="kpi-caption">Dubai corridor coverage</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="dashboard-tabs" aria-label="Dashboard Views">
+      <button class="tab-btn active" data-tab="tab-assets" id="btn-tab-assets">
+        <span class="tab-icon">📊</span> Assets & Sensor Telemetry
+      </button>
+      <button class="tab-btn" data-tab="tab-inventory" id="btn-tab-inventory">
+        <span class="tab-icon">📦</span> Spare-Part Inventory
+      </button>
+      <button class="tab-btn" data-tab="tab-technicians" id="btn-tab-technicians">
+        <span class="tab-icon">👨‍🔧</span> Field Technicians
+      </button>
+      <button class="tab-btn" data-tab="tab-logs" id="btn-tab-logs">
+        <span class="tab-icon">📋</span> Autonomous Operation Logs
+      </button>
+    </nav>
+
+    <!-- Global Error Banner -->
+    <div class="alert-banner hidden" id="global-error-banner">
+      <div class="alert-content">
+        <span class="alert-icon">⚠️</span>
+        <span class="alert-msg" id="global-error-msg">Failed to connect to backend server.</span>
+      </div>
+      <button class="alert-retry-btn" id="btn-retry-connection">Retry</button>
+    </div>
+
+    <!-- Main Content Panels -->
+    <main class="content-area">
+      <!-- 1. Assets View -->
+      <section class="tab-pane active" id="tab-assets">
+        <div class="pane-header">
+          <div>
+            <h3>Facility Assets & Real-Time Telemetry</h3>
+            <p class="pane-sub">Select an asset to execute autonomous failure prediction, inventory stockout analysis, technician dispatch routing, and cost optimization.</p>
+          </div>
+          <button class="refresh-btn" id="btn-refresh-assets">🔄 Refresh Telemetry</button>
+        </div>
+
+        <div class="assets-grid" id="assets-container">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Loading telemetry stream from backend...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Inventory View -->
+      <section class="tab-pane" id="tab-inventory">
+        <div class="pane-header">
+          <div>
+            <h3>Warehouse Spare-Part Inventory</h3>
+            <p class="pane-sub">Real-time stock levels, replenishment lead times, and unit costs linked to operational assets.</p>
+          </div>
+          <button class="refresh-btn" id="btn-refresh-inventory">🔄 Refresh Inventory</button>
+        </div>
+        <div class="table-card">
+          <table class="data-table" id="inventory-table">
+            <thead>
+              <tr>
+                <th>Part ID</th>
+                <th>Part Description</th>
+                <th>Category</th>
+                <th>Current Stock</th>
+                <th>Safety Buffer</th>
+                <th>Unit Cost (AED)</th>
+                <th>Lead Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-tbody">
+              <tr><td colspan="8" class="table-empty">Loading inventory records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3. Technicians View -->
+      <section class="tab-pane" id="tab-technicians">
+        <div class="pane-header">
+          <div>
+            <h3>Certified Field Technicians</h3>
+            <p class="pane-sub">Active shift personnel, verified diagnostic competencies, and real-time Dubai corridor locations.</p>
+          </div>
+          <button class="refresh-btn" id="btn-refresh-technicians">🔄 Refresh Technicians</button>
+        </div>
+        <div class="technicians-grid" id="technicians-container">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Loading technician roster...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Operations Audit Logs View -->
+      <section class="tab-pane" id="tab-logs">
+        <div class="pane-header">
+          <div>
+            <h3>Autonomous Operations Audit Trail</h3>
+            <p class="pane-sub">Historical log of all AI autonomous decision triggers, predicted failure risks, dispatched technicians, and cost savings.</p>
+          </div>
+          <button class="refresh-btn" id="btn-refresh-logs">🔄 Refresh Logs</button>
+        </div>
+        <div class="table-card">
+          <table class="data-table" id="logs-table">
+            <thead>
+              <tr>
+                <th>Log ID</th>
+                <th>Timestamp</th>
+                <th>Asset ID</th>
+                <th>Failure Prob</th>
+                <th>Risk Score</th>
+                <th>Action Recommendation</th>
+                <th>Dispatched Tech</th>
+                <th>ETA</th>
+                <th>Savings (AED)</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody">
+              <tr><td colspan="9" class="table-empty">No autonomous operations executed yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- Autonomous Operation Decision Modal -->
+    <div class="modal-overlay hidden" id="decision-modal" role="dialog" aria-modal="true">
+      <div class="modal-container">
+        <header class="modal-header">
+          <div class="modal-title-wrap">
+            <span class="modal-badge-action" id="modal-action-badge">URGENT_MAINTENANCE_AND_REORDER</span>
+            <h2 id="modal-asset-title">CHILLER-MARINA-101</h2>
+          </div>
+          <button class="modal-close-btn" id="btn-close-modal" aria-label="Close modal">✕</button>
+        </header>
+
+        <div class="modal-body" id="modal-body-content">
+          <!-- Execution Banner -->
+          <div class="decision-summary-box" id="modal-summary-box">
+            <div class="summary-icon">⚡</div>
+            <div class="summary-text" id="modal-summary-text">
+              High failure risk (0.98) with critical stockout vulnerability for CHILLER_EXPANSION_VALVE.
+            </div>
+          </div>
+
+          <!-- 4 Core Intelligence Quadrants -->
+          <div class="quadrant-grid">
+            <!-- Quadrant 1: Asset Failure Prediction -->
+            <div class="quadrant-card">
+              <div class="quadrant-header">
+                <span class="quadrant-icon">🔮</span>
+                <h4>Failure Prediction & Health</h4>
+              </div>
+              <div class="metrics-list">
+                <div class="metric-row">
+                  <span class="metric-label">Failure Probability</span>
+                  <strong class="metric-value text-critical" id="res-failure-prob">97.6%</strong>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Asset Risk Status</span>
+                  <span class="status-badge badge-critical" id="res-asset-risk">CRITICAL</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Risk Score</span>
+                  <strong class="metric-value" id="res-risk-score">90.9 / 100</strong>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Estimated Remaining Life (RUL)</span>
+                  <strong class="metric-value text-highlight" id="res-rul-days">1.0 Days</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quadrant 2: Inventory & Stockout Intelligence -->
+            <div class="quadrant-card">
+              <div class="quadrant-header">
+                <span class="quadrant-icon">📦</span>
+                <h4>Inventory & Spare Parts</h4>
+              </div>
+              <div class="metrics-list">
+                <div class="metric-row">
+                  <span class="metric-label">Linked Spare Part</span>
+                  <strong class="metric-value" id="res-spare-part">CHILLER_EXPANSION_VALVE</strong>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Current Warehouse Stock</span>
+                  <strong class="metric-value text-critical" id="res-current-stock">0 Units</strong>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Stockout Risk Level</span>
+                  <span class="status-badge badge-critical" id="res-stockout-risk">CRITICAL</span>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Recommended Reorder Qty</span>
+                  <strong class="metric-value text-highlight" id="res-reorder-qty">37 Units</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quadrant 3: Technician Routing & SLA -->
+            <div class="quadrant-card">
+              <div class="quadrant-header">
+                <span class="quadrant-icon">📍</span>
+                <h4>Technician Dispatch & SLA</h4>
+              </div>
+              <div class="metrics-list">
+                <div class="metric-row">
+                  <span class="metric-label">Selected Technician</span>
+                  <strong class="metric-value" id="res-selected-tech">TECH-DXB-042 (Rashid Al-Nuaimi)</strong>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Technician Match Score</span>
+                  <strong class="metric-value text-highlight" id="res-tech-score">86.5 / 100</strong>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Estimated Road ETA</span>
+                  <strong class="metric-value" id="res-tech-eta">41.5 Minutes (24.4 km)</strong>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">SLA Compliance Status</span>
+                  <span class="status-badge badge-success" id="res-sla-status">WITHIN_SLA</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quadrant 4: Financial Cost & Savings Optimization -->
+            <div class="quadrant-card">
+              <div class="quadrant-header">
+                <span class="quadrant-icon">💰</span>
+                <h4>Financial Cost & Savings</h4>
+              </div>
+              <div class="metrics-list">
+                <div class="metric-row">
+                  <span class="metric-label">Preventive Service Cost</span>
+                  <strong class="metric-value" id="res-preventive-cost">725.00 AED</strong>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Avoided Failure Breakdown Cost</span>
+                  <strong class="metric-value text-muted" id="res-failure-cost">6,820.00 AED</strong>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Net Projected Savings</span>
+                  <strong class="metric-value text-success text-large" id="res-net-savings">+5,929.27 AED</strong>
+                </div>
+                <div class="metric-row">
+                  <span class="metric-label">Audit Log ID</span>
+                  <span class="log-pill" id="res-log-id">#5</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button class="btn-secondary" id="btn-modal-dismiss">Dismiss</button>
+          <button class="btn-primary" id="btn-modal-print" onclick="window.print()">🖨️ Export Operation Ticket</button>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
