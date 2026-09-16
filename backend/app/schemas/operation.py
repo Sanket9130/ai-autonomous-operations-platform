@@ -25,8 +25,11 @@ class OperationInventory(BaseModel):
     part_id: Optional[str] = None
     part_name: Optional[str] = None
     stock_status: str
-    current_stock: Optional[int] = None
-    minimum_stock: Optional[int] = None
+    current_stock: Optional[float] = None
+    minimum_stock: Optional[float] = None
+    reorder_point: Optional[float] = None
+    safety_stock: Optional[float] = None
+    predicted_demand_30d: Optional[float] = None
     reorder_quantity: int = 0
 
 
@@ -34,7 +37,7 @@ class OperationTechnician(BaseModel):
     technician_id: str
     name: str
     skills: List[str]
-    certifications: List[str]
+    certifications: Optional[List[str]] = []
     experience: float
     current_latitude: float
     current_longitude: float
@@ -50,7 +53,7 @@ class OperationRoute(BaseModel):
 class OperationSLA(BaseModel):
     sla_hours: float
     eta_hours: float
-    sla_status: str  # WITHIN_SLA, AT_RISK, SLA_BREACH_RISK
+    sla_status: str
 
 
 class OperationCost(BaseModel):
@@ -79,3 +82,28 @@ class OperationResponse(BaseModel):
     cost: OperationCost
     decision: OperationDecision
     summary: str
+
+    # Unified keys for frontend / integration test compatibility
+    status: str = "success"
+    log_id: Optional[Any] = None
+    asset_id: Optional[str] = None
+    unified_action: Optional[str] = None
+    operational_summary: Optional[str] = None
+    failure_prediction: Optional[Dict[str, Any]] = None
+    inventory_intelligence: Optional[Dict[str, Any]] = None
+    technician_dispatch: Optional[Dict[str, Any]] = None
+    cost_optimization: Optional[Dict[str, Any]] = None
+    ai_engine_metadata: Optional[Dict[str, Any]] = None
+
+
+class TriggerOperationRequest(BaseModel):
+    asset_id: Optional[str] = None
+    force: bool = False
+    vibration_override: Optional[float] = None
+    operating_temp_override: Optional[float] = None
+    ambient_temp_override: Optional[float] = None
+    sla_deadline_hours: Optional[float] = 3.0
+
+
+class AutonomousOperationBackendResponse(OperationResponse):
+    pass

@@ -395,8 +395,10 @@ function displayDecisionModal(data) {
   elements.resSparePart.textContent = inv.spare_part || 'N/A';
   elements.resCurrentStock.textContent = `${inv.current_stock || 0} Units`;
   elements.resStockoutRisk.textContent = inv.stockout_risk || 'UNKNOWN';
-  elements.resStockoutRisk.className = `status-badge ${inv.stockout_risk === 'CRITICAL' ? 'badge-critical' : 'badge-success'}`;
-  elements.resReorderQty.textContent = `${inv.recommended_order_quantity || 0} Units (ROP: ${inv.reorder_point || 0})`;
+  const ropVal = (inv.reorder_point !== undefined && inv.reorder_point !== null)
+    ? (Number(inv.reorder_point) % 1 !== 0 ? Number(inv.reorder_point).toFixed(2) : inv.reorder_point)
+    : (data.inventory?.reorder_point || 0);
+  elements.resReorderQty.textContent = `${inv.recommended_order_quantity || 0} Units (ROP: ${ropVal})`;
 
   // 3. Technician Dispatch & SLA
   elements.resSelectedTech.textContent = tech.selected_technician || 'None';

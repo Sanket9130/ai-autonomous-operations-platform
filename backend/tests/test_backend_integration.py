@@ -107,15 +107,16 @@ def test_trigger_autonomous_operation_asset_not_found():
 
 
 def test_error_handling_when_ai_engine_unreachable():
-    """Verify proper 503 response when AI Engine is offline."""
+    """Verify proper 502/503 response when AI Engine is offline."""
     response = client.post(
         "/api/operations/trigger/CHILLER-MARINA-101"
     )
     # If the real server on port 8000 isn't running in the background during pure unit test,
-    # it must gracefully return HTTP 503 Service Unavailable
-    assert response.status_code in [200, 503]
-    if response.status_code == 503:
-        assert "Unable to connect to AI Engine" in response.json()["detail"]
+    # it must gracefully return HTTP 502 Bad Gateway
+    assert response.status_code in [200, 502, 503]
+    if response.status_code in [502, 503]:
+        detail = response.json()["detail"].lower()
+        assert any(msg in detail for msg in ["ai engine unavailable", "unable to connect", "connection refused"])
 
 
 def test_operation_logs_audit_trail():

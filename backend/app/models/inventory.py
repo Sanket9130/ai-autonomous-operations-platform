@@ -12,5 +12,17 @@ class Inventory(Base):
     minimum_stock = Column(Integer, nullable=False, default=0)
     lead_time = Column(Integer, nullable=False, default=1)  # days
     unit_cost = Column(Float, nullable=False, default=0.0)
-    supplier = Column(String(255), nullable=False)
+    supplier = Column(String(255), nullable=False, default="Generic Supplier")
     asset_type = Column(String(64), nullable=True)  # Associated asset type (e.g. HVAC_CHILLER)
+
+    @property
+    def unit_cost_aed(self) -> float:
+        return float(self.unit_cost)
+
+    @property
+    def lead_time_days(self) -> float:
+        return float(self.lead_time)
+
+    @property
+    def min_safety_stock(self) -> float:
+        return float(self.minimum_stock)

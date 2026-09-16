@@ -5,6 +5,11 @@ AI Autonomous Operations Intelligence Platform
 """
 
 import sys
+from pathlib import Path
+root_path = str(Path(__file__).resolve().parent.parent.parent)
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+
 from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine

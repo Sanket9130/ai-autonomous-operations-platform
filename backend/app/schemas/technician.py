@@ -6,12 +6,14 @@ class TechnicianBase(BaseModel):
     technician_id: str
     name: str
     skills: List[str]
-    certifications: List[str]
+    certifications: Optional[List[str]] = []
     experience: float
     current_latitude: float
     current_longitude: float
     availability: bool
     status: Optional[str] = "AVAILABLE"
+    current_location: Optional[str] = None
+    technician_workload: Optional[int] = 0
 
 
 class TechnicianResponse(TechnicianBase):

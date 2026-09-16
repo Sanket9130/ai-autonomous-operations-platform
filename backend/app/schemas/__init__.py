@@ -5,17 +5,19 @@ from backend.app.schemas.asset import (
     TelemetryResponse,
     MaintenanceResponse,
 )
-from backend.app.schemas.inventory import InventoryBase, InventoryResponse
-from backend.app.schemas.technician import TechnicianBase, TechnicianResponse
-from backend.app.schemas.ai_engine import (
-    AIEngineRequest,
-    AIEngineResponse,
-    AIEngineTelemetry,
-    AIEngineMaintenance,
-    AIEngineSparePart,
+
+from backend.app.schemas.inventory import (
+    InventoryBase,
+    InventoryResponse,
+    InventoryItemResponse,
 )
+
+from backend.app.schemas.technician import (
+    TechnicianBase,
+    TechnicianResponse,
+)
+
 from backend.app.schemas.operation import (
-    OperationResponse,
     OperationAsset,
     OperationPrediction,
     OperationInventory,
@@ -24,6 +26,17 @@ from backend.app.schemas.operation import (
     OperationSLA,
     OperationCost,
     OperationDecision,
+    OperationResponse,
+    TriggerOperationRequest,
+    AutonomousOperationBackendResponse,
+)
+
+from backend.app.schemas.ai_engine import (
+    AIEngineTelemetry,
+    AIEngineMaintenance,
+    AIEngineSparePart,
+    AIEngineRequest,
+    AIEngineResponse,
 )
 
 __all__ = [
@@ -34,14 +47,9 @@ __all__ = [
     "MaintenanceResponse",
     "InventoryBase",
     "InventoryResponse",
+    "InventoryItemResponse",
     "TechnicianBase",
     "TechnicianResponse",
-    "AIEngineRequest",
-    "AIEngineResponse",
-    "AIEngineTelemetry",
-    "AIEngineMaintenance",
-    "AIEngineSparePart",
-    "OperationResponse",
     "OperationAsset",
     "OperationPrediction",
     "OperationInventory",
@@ -50,4 +58,12 @@ __all__ = [
     "OperationSLA",
     "OperationCost",
     "OperationDecision",
+    "OperationResponse",
+    "TriggerOperationRequest",
+    "AutonomousOperationBackendResponse",
+    "AIEngineTelemetry",
+    "AIEngineMaintenance",
+    "AIEngineSparePart",
+    "AIEngineRequest",
+    "AIEngineResponse",
 ]
