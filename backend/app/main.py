@@ -1,75 +1,76 @@
-import logging
+"""
+FastAPI Backend Application for AI Autonomous Operations Platform.
+Orchestrates PostgreSQL/SQLite business data, inventory, and technician routing with the AI Engine.
+"""
+
 from contextlib import asynccontextmanager
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from backend.app.core.config import settings
-from backend.app.core.database import init_db, SessionLocal
+from backend.app.core.database import SessionLocal, init_db
 from backend.app.seed.seed_data import seed_database
-from backend.app.api import api_router
-
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s"
-)
-logger = logging.getLogger("autonomous_ops")
+from backend.app.routers import assets, inventory, operations, technicians
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database tables
-    logger.info("Initializing database schema...")
+    """Startup and shutdown events."""
     init_db()
-
-    # Seed initial test data
     db = SessionLocal()
     try:
-        logger.info("Verifying seed data...")
         seed_database(db)
     finally:
         db.close()
-
     yield
-    logger.info("Shutting down autonomous operations platform...")
 
 
 app = FastAPI(
-    title="AI Autonomous Operations Intelligence Platform",
-    description="Backend orchestration for autonomous industrial asset operations, routing, technician assignment, and SLA tracking.",
+    title="Facility Operations Backend API",
+    description="Backend Orchestration Service connecting Database and AI Decision Intelligence Engine",
     version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
     lifespan=lifespan,
 )
 
-# CORS Middleware
-origins = settings.CORS_ORIGINS
-if isinstance(origins, str):
-    origins = [origins]
+# CORS Configuration
+allowed_origins = settings.CORS_ORIGINS
+if isinstance(allowed_origins, str):
+    if allowed_origins.strip() == "*":
+        allowed_origins = ["*"]
+    else:
+        allowed_origins = [o.strip() for o in allowed_origins.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins if origins != ["*"] else ["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Health checks
+# Register Routers
+app.include_router(operations.router)
+app.include_router(assets.router)
+app.include_router(inventory.router)
+app.include_router(technicians.router)
+
+
 @app.get("/health", tags=["Health"])
-@app.get("/api/health", tags=["Health"])
-def health_check():
+async def health_check():
+    """Backend service health check."""
     return {
         "status": "healthy",
-        "service": "autonomous-operations-backend",
+        "service": "backend-orchestrator",
         "version": "1.0.0",
-        "environment": settings.ENVIRONMENT,
+        "ai_engine_target": settings.AI_ENGINE_URL,
     }
 
 
-# Include all REST API routes
-app.include_router(api_router)
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("backend.app.main:app", host=settings.HOST, port=settings.PORT, reload=True)
+# Mount Frontend static files for unified single-server deployment
+frontend_dist = Path(__file__).resolve().parent.parent.parent / "frontend"
+if frontend_dist.exists() and (frontend_dist / "index.html").exists():
+    app.mount("/", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")

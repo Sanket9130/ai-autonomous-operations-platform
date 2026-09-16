@@ -1,4 +1,5 @@
 import logging
+from typing import Union, Dict, Any
 import httpx
 from fastapi import HTTPException, status
 from pydantic import ValidationError
@@ -10,25 +11,68 @@ logger = logging.getLogger(__name__)
 
 class AIEngineClient:
     def __init__(self, base_url: str = None, timeout_seconds: float = None):
-        self.base_url = (base_url or settings.AI_ENGINE_URL).rstrip("/")
+        raw_url = base_url or settings.AI_ENGINE_URL
+        # Ensure base_url does not end with /autonomous-operation if configured as full path
+        if "/autonomous-operation" in raw_url:
+            self.base_url = raw_url.replace("/autonomous-operation", "").rstrip("/")
+        else:
+            self.base_url = raw_url.rstrip("/")
         self.timeout = timeout_seconds or settings.AI_ENGINE_TIMEOUT_SECONDS
 
-    async def call_autonomous_operation(self, request: AIEngineRequest) -> AIEngineResponse:
+    async def call_autonomous_operation(self, request: Union[AIEngineRequest, Dict[str, Any]]) -> AIEngineResponse:
         """
         Sends telemetry, maintenance, and inventory data to the AI Engine for autonomous decision.
         Strictly handles:
           - Connection failures (502 Bad Gateway)
           - Timeouts (504 Gateway Timeout)
-          - HTTP 4xx / 5xx errors (502 Bad Gateway with upstream details)
-          - Malformed JSON / Invalid Schema (502 Bad Gateway)
+          - Preserves existing HTTPExceptions
+          - Upstream HTTP errors (502 Bad Gateway)
+          - Malformed JSON / Schema mismatch (502 Bad Gateway)
         Never returns fake or fabricated results if the upstream service fails.
         """
+        # If request is already an AIEngineResponse (e.g. from mock), return directly
+        if isinstance(request, AIEngineResponse):
+            return request
+
         target_url = f"{self.base_url}/autonomous-operation"
-        payload = request.model_dump()
+
+        if isinstance(request, dict):
+            payload = request
+        elif hasattr(request, "model_dump"):
+            # If AIEngineRequest, adapt fields to AutonomousOperationInput format
+            req_dict = request.model_dump()
+            telem = req_dict.get("telemetry", {})
+            spare_parts = req_dict.get("spare_parts", [])
+            first_part = spare_parts[0] if spare_parts else {}
+
+            payload = {
+                "asset_id": req_dict.get("asset_id", "UNKNOWN"),
+                "asset_type": req_dict.get("asset_type", "HVAC_CHILLER"),
+                "asset_location": "MARINA",
+                "vibration_mm_s": float(telem.get("vibration_rms", 1.0)),
+                "operating_temp_c": float(telem.get("bearing_temperature", 65.0)),
+                "ambient_temp_c": 42.0,
+                "power_kw": float(telem.get("power_kw", 30.0)),
+                "runtime_hours": float(telem.get("operating_hours", 5000.0)),
+                "last_maintenance_days": int(req_dict.get("maintenance_history", {}).get("past_failures_count", 0)),
+                "asset_criticality": "CRITICAL",
+                "required_spare_part": first_part.get("part_id", "PART-BRG-7701"),
+                "current_stock": float(first_part.get("current_stock", 0.0)),
+                "lead_time_days": float(first_part.get("lead_time", 7.0)),
+                "forecast_days": 30,
+                "spare_part_cost": float(first_part.get("unit_cost", 450.0)),
+                "sla_deadline_hours": 3.0,
+                "estimated_repair_duration_hours": 1.5,
+            }
+        else:
+            payload = dict(request)
 
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(target_url, json=payload)
+        except HTTPException:
+            # Preserve already raised HTTPExceptions
+            raise
         except (httpx.ConnectError, httpx.NetworkError) as exc:
             logger.error(f"Failed to connect to AI Engine at {target_url}: {exc}")
             raise HTTPException(

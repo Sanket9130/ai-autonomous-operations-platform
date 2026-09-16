@@ -5,6 +5,7 @@ from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
 from backend.app.core.database import Base, get_db
+from backend.app import models  # noqa: F401
 from backend.app.seed.seed_data import seed_database
 from backend.app.main import app
 
