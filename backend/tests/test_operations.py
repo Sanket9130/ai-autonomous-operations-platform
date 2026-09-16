@@ -83,6 +83,7 @@ def test_successful_autonomous_operation(client, db_session, mock_ai_response):
         assert saved_wo is not None
         assert saved_wo.technician_id == "TECH-DXB-01"
         assert saved_wo.status == "DISPATCHED"
+        assert saved_wo.priority == "HIGH"
 
 
 def test_operation_invalid_asset(client):
@@ -143,3 +144,45 @@ def test_operation_logs_endpoint(client, db_session, mock_ai_response):
     logs = logs_resp.json()
     assert len(logs) >= 1
     assert logs[0]["asset_id"] == "CHILLER-MARINA-101"
+
+
+@pytest.mark.parametrize(
+    "risk_level,expected_priority",
+    [
+        ("CRITICAL", "CRITICAL"),
+        ("HIGH", "HIGH"),
+        ("MEDIUM", "MEDIUM"),
+        ("LOW", "LOW"),
+    ],
+)
+def test_autonomous_work_order_priority_mapping(
+    client, db_session, mock_ai_response, risk_level, expected_priority
+):
+    """
+    Verify that autonomous work order priority is derived consistently
+    from the operation decision / asset risk level:
+      CRITICAL -> CRITICAL
+      HIGH -> HIGH
+      MEDIUM -> MEDIUM
+      LOW -> LOW
+    """
+    mock_ai_response.asset_risk = risk_level
+    mock_ai_response.priority = expected_priority
+
+    with patch(
+        "backend.app.services.operation_orchestrator.ai_engine_client.call_autonomous_operation",
+        new_callable=AsyncMock,
+    ) as mock_call:
+        mock_call.return_value = mock_ai_response
+
+        response = client.post("/api/operations/trigger/CHILLER-MARINA-101")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["decision"]["priority"] == expected_priority
+
+        op_id = data["operation_id"]
+        saved_wo = db_session.query(WorkOrder).filter(WorkOrder.operation_id == op_id).first()
+        assert saved_wo is not None
+        assert saved_wo.priority == expected_priority
+

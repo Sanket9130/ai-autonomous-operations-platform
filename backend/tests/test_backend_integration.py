@@ -12,6 +12,8 @@ import httpx
 
 from backend.app.database import init_db_and_seed
 from backend.app.main import app
+from backend.app.core.database import SessionLocal
+from backend.app.models.work_order import WorkOrder
 
 # Add ai-engine to sys.path to import its app for live cross-service testing
 ai_engine_path = Path(__file__).resolve().parent.parent.parent / "ai-engine"
@@ -76,6 +78,16 @@ def test_trigger_autonomous_operation_live_ai_engine():
         assert data["inventory_intelligence"]["stockout_risk"] == "CRITICAL"
         assert "estimated_savings" in data["cost_optimization"]
         assert "operational_summary" in data
+        assert data["decision"]["priority"] == "CRITICAL"
+
+        # Verify persisted autonomous WorkOrder has matching CRITICAL priority
+        db = SessionLocal()
+        try:
+            wo = db.query(WorkOrder).filter(WorkOrder.operation_id == data["log_id"]).first()
+            assert wo is not None
+            assert wo.priority == "CRITICAL"
+        finally:
+            db.close()
 
 
 def test_trigger_autonomous_operation_healthy_asset():

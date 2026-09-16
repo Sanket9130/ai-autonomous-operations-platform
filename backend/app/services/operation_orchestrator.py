@@ -308,6 +308,18 @@ async def orchestrate_autonomous_operation(
 
     db.add(op_log)
 
+    # Deterministic mapping: AI operation risk/urgency -> work order priority
+    risk_to_priority = {
+        "CRITICAL": "CRITICAL",
+        "HIGH": "HIGH",
+        "MEDIUM": "MEDIUM",
+        "LOW": "LOW",
+    }
+    work_order_priority = risk_to_priority.get(
+        str(ai_response.asset_risk).upper(),
+        risk_to_priority.get(str(ai_response.priority).upper(), "MEDIUM"),
+    )
+
     # If technician assigned, create WorkOrder record
     if selected_tech:
         work_order = WorkOrder(
@@ -316,6 +328,7 @@ async def orchestrate_autonomous_operation(
             asset_id=asset.asset_id,
             technician_id=selected_tech.technician_id,
             status="DISPATCHED",
+            priority=work_order_priority,
             created_at=now_utc,
         )
         db.add(work_order)
@@ -402,7 +415,7 @@ async def orchestrate_autonomous_operation(
         ),
         decision=OperationDecision(
             final_action=final_action_code,
-            priority=ai_response.priority,
+            priority=work_order_priority,
             autonomous_decision=final_action_code,
         ),
         summary=summary_text,
