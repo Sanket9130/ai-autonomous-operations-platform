@@ -14,4 +14,4 @@ venv/
 .venv/
 build/
 dist/
-*.egg-info/
+*.egg-info/*.db
