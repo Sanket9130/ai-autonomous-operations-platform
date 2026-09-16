@@ -19,11 +19,12 @@ from backend.app.routers import assets, inventory, operations, technicians
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     init_db()
-    db = SessionLocal()
-    try:
-        seed_database(db)
-    finally:
-        db.close()
+    if settings.SEED_DATA:
+        db = SessionLocal()
+        try:
+            seed_database(db)
+        finally:
+            db.close()
     yield
 
 
