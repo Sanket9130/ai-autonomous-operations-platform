@@ -14,8 +14,9 @@ COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /app/backend/requirements.txt
 
-# Copy application code
+# Copy application code and frontend static assets
 COPY backend /app/backend
+COPY frontend /app/frontend
 
 # Environment defaults
 ENV HOST=0.0.0.0

@@ -1,5 +1,5 @@
 import os
-from typing import List, Union
+from typing import List, Optional, Union
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -14,10 +14,14 @@ class Settings(BaseSettings):
     CORS_ORIGINS: Union[str, List[str]] = "*"
 
     # Database
+    POSTGRES_USER: Optional[str] = None
+    POSTGRES_PASSWORD: Optional[str] = None
+    POSTGRES_DB: Optional[str] = "autonomous_ops"
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
         "sqlite:///./autonomous_ops.db"
     )
+    SEED_DATA: bool = True
 
     # AI Engine
     AI_ENGINE_URL: str = os.getenv("AI_ENGINE_URL", "http://localhost:8000")
