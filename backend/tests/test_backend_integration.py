@@ -10,7 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 import httpx
 
-from backend.app.database import init_db
+from backend.app.database import init_db_and_seed
 from backend.app.main import app
 
 # Add ai-engine to sys.path to import its app for live cross-service testing
@@ -21,7 +21,7 @@ if str(ai_engine_path) not in sys.path:
 from api.main import app as ai_engine_app
 
 # Initialize test database
-init_db()
+init_db_and_seed()
 client = TestClient(app)
 
 
